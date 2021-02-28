@@ -2,14 +2,29 @@
 
 namespace There4Test\Slim\Test;
 
+use PHPUnit\Framework\TestCase;
 use There4\Slim\Test\WebDbTestCase;
 
-class WebDbTestCaseTest extends \PHPUnit_Framework_TestCase
+class WebDbTestCaseTest extends TestCase
 {
     public function testExtendsDbUnit()
     {
         $testCase = new WebDbTestCase();
-        $this->assertInstanceOf('\PHPUnit_Extensions_Database_TestCase', $testCase);
+        self::assertInstanceOf(
+            '\PHPUnit\DbUnit\TestCase',
+            $testCase
+        );
+    }
+
+    public function testSetup()
+    {
+        $testCase = new WebDbTestCase();
+        $testCase->setup();
+
+        $actualClass   = get_class($testCase->client);
+        $expectedClass = 'There4\Slim\Test\WebTestClient';
+
+        self::assertEquals($expectedClass, $actualClass);
     }
 
     public function testGetSlimInstance()
@@ -21,9 +36,21 @@ class WebDbTestCaseTest extends \PHPUnit_Framework_TestCase
         );
         $testCase = new WebDbTestCase();
         $slim = $testCase->getSlimInstance();
-        $this->assertInstanceOf('\Slim\Slim', $slim);
+        self::assertInstanceOf('\Slim\App', $slim);
         foreach ($expectedConfig as $key => $value) {
-            $this->assertSame($expectedConfig[$key], $slim->config($key));
+            self::assertEquals(
+                $expectedConfig[$key],
+                $slim->getContainer()->get('settings')[$key]
+            );
         }
+    }
+
+    public function testGetDataset()
+    {
+        $testCase = new WebDbTestCase();
+        self::assertInstanceOf(
+            '\PHPUnit\DbUnit\DataSet\QueryDataSet',
+            $testCase->getDataSet()
+        );
     }
 }
